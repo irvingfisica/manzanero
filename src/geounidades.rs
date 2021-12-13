@@ -15,11 +15,11 @@ pub struct GeoPoligono<T: Datos> {
     pub poligono: geo::Polygon<f64>,
     pub datos: Option<T>,
     pub centroide: Option<geo::Point<f64>>,
-    pub cve: Option<String>,
+    pub cve: String,
 }
 
 impl<T: Datos> GeoPoligono<T> {
-    pub fn new(geopol: &geo::Polygon<f64>, datos: Option<T>, cve: Option<String>) -> Self {
+    pub fn new(geopol: &geo::Polygon<f64>, datos: Option<T>, cve: &str) -> Self {
 
         let centroide = geopol.centroid();
 
@@ -27,7 +27,7 @@ impl<T: Datos> GeoPoligono<T> {
             poligono: geopol.clone(),
             datos: datos,
             centroide: centroide,
-            cve: cve,
+            cve: cve.to_string(),
         }
     }
 }
@@ -35,10 +35,10 @@ impl<T: Datos> GeoPoligono<T> {
 impl<T: Datos> GeoTool for GeoPoligono<T> {
     fn agregar_rama(&self, arbol: &mut KdTree<f64, String, [f64;2]>) -> Result<(), Box<dyn Error>> {
 
-        match (self.centroide,self.cve.as_ref()) {
-            (Some(punto),Some(cve)) => {
+        match self.centroide {
+            Some(punto) => {
                 let coord = [punto.x(),punto.y()];
-                arbol.add(coord,cve.clone())?;
+                arbol.add(coord,self.cve.clone())?;
             },
             _ => {}
         };
@@ -47,13 +47,14 @@ impl<T: Datos> GeoTool for GeoPoligono<T> {
     }
 }
 
-pub fn read_polygons<T: Datos>(ruta: &str, mapa: &HashMap<String,T>, cveid: &str) -> Result<Vec<GeoPoligono<T>>, Box<dyn Error>>
+pub fn read_polygons<T: Datos>(ruta: &str, mapa: &HashMap<String,T>, cveid: &str) -> Result<HashMap<String,GeoPoligono<T>>, Box<dyn Error>>
     where T: Clone,
 {
     let pols = shapefile::read_as::<_,shapefile::Polygon, Record>(ruta)?;
 
-    let mut salida: Vec<GeoPoligono<T>> = Vec::new();
+    let mut salida: HashMap<String,GeoPoligono<T>> = HashMap::new();
 
+    let mut contadora: usize = 0;
     for (polygon, record) in pols {
         let geo_polygon: geo::MultiPolygon<f64> = polygon.into();
         for geopol in geo_polygon {
@@ -68,8 +69,18 @@ pub fn read_polygons<T: Datos>(ruta: &str, mapa: &HashMap<String,T>, cveid: &str
                 _ => None,
             };
 
-            let poltemp = GeoPoligono::new(&geopol, datos, cve);
-            salida.push(poltemp);
+            match cve {
+                Some(clave) => {
+                    let poltemp = GeoPoligono::new(&geopol, datos, &clave);
+                    salida.insert(clave,poltemp);
+                },
+                None => {
+                    contadora = contadora + 1;
+                    let clave = contadora.to_string();
+                    let poltemp = GeoPoligono::new(&geopol, datos, &clave);
+                    salida.insert(clave,poltemp);
+                }
+            }
         }
     }
 
@@ -81,16 +92,16 @@ pub fn read_polygons<T: Datos>(ruta: &str, mapa: &HashMap<String,T>, cveid: &str
 pub struct GeoPunto<T: Datos> {
     pub punto: Option<geo::Point<f64>>,
     pub datos: Option<T>,
-    pub cve: Option<String>,
+    pub cve: String,
 }
 
 impl<T: Datos> GeoPunto<T> {
-    pub fn new(geopoint: Option<geo::Point<f64>>, datos: Option<T>, cve: Option<String>) -> Self {
+    pub fn new(geopoint: Option<geo::Point<f64>>, datos: Option<T>, cve: &str) -> Self {
 
         GeoPunto {
             punto: geopoint.clone(),
             datos: datos,
-            cve: cve,
+            cve: cve.to_string(),
         }
     }
 }
@@ -98,10 +109,10 @@ impl<T: Datos> GeoPunto<T> {
 impl<T: Datos> GeoTool for GeoPunto<T> {
     fn agregar_rama(&self, arbol: &mut KdTree<f64, String, [f64;2]>) -> Result<(), Box<dyn Error>> {
 
-        match (self.punto,self.cve.as_ref()) {
-            (Some(punto),Some(cve)) => {
+        match self.punto {
+            Some(punto) => {
                 let coord = [punto.x(),punto.y()];
-                arbol.add(coord,cve.clone())?;
+                arbol.add(coord,self.cve.clone())?;
             },
             _ => {}
         };
@@ -110,27 +121,34 @@ impl<T: Datos> GeoTool for GeoPunto<T> {
     }
 }
 
-pub fn points_from_vec<T: Datos>(vector: Vec<T>) -> Result<Vec<GeoPunto<T>>, Box<dyn Error>>
+pub fn points_from_vec<T: Datos>(vector: Vec<T>) -> Result<HashMap<String,GeoPunto<T>>, Box<dyn Error>>
 {
 
-    let mut salida: Vec<GeoPunto<T>> = Vec::new();
+    let mut salida: HashMap<String,GeoPunto<T>> = HashMap::new();
 
     let mut contador: usize = 0;
 
     for evento in vector {
         let coords = match evento.get_coordinates() {
             Some((lon,lat)) => {
-                contador = contador + 1;
                 (lon,lat)
             },
             _ => break
         };
 
         let punto = Some(geo::Point::new(coords.0, coords.1));
-        let cve = contador.to_string();
+        let cve = match evento.get_cve() {
+            None => {
+                contador = contador + 1;
+                contador.to_string()
+            }
+            Some(clave) => {
+                clave
+            }
+        };
 
-        let pointemp = GeoPunto::new(punto, Some(evento), Some(cve));
-        salida.push(pointemp);
+        let pointemp = GeoPunto::new(punto, Some(evento), &cve);
+        salida.insert(cve,pointemp);
     };
 
     Ok(salida)

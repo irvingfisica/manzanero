@@ -8,14 +8,14 @@ fn main() {
     let mut mapa: HashMap<String,ManzanaCenso2020> = HashMap::new();
 
     geodata::read_mzacenso2020_csv("./datos/RESAGEBURB_09CSV20.csv", &mut mapa).unwrap();
-    let _manzanas: Vec<GeoPoligono<ManzanaCenso2020>> = geounidades::read_polygons("./datos/09m.shp", &mapa, "CVEGEO").unwrap();
+    let _manzanas: HashMap<String, GeoPoligono<ManzanaCenso2020>> = geounidades::read_polygons("./datos/09m.shp", &mapa, "CVEGEO").unwrap();
 
     let mut carpetas: Vec<CarpetaInvestigacionCDMX> = Vec::new();
 
     geodata::read_carpetascdmx_csv("./datos/carpetas_completa_octubre_2021.csv", &mut carpetas).unwrap();
-    let eventos: Vec<GeoPunto<CarpetaInvestigacionCDMX>> = geounidades::points_from_vec(carpetas).unwrap();
+    let eventos: HashMap<String, GeoPunto<CarpetaInvestigacionCDMX>> = geounidades::points_from_vec(carpetas).unwrap();
 
-    println!("{:?}",eventos[0]);
+    println!("{:?}",eventos.get("0"));
 
 }
 

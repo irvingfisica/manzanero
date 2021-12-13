@@ -4,6 +4,7 @@ use std::error::Error;
 
 pub trait Datos {
     fn get_coordinates(&self) -> Option<(f64,f64)>;
+    fn get_cve(&self) -> Option<String>;
 }
 
 #[allow(non_snake_case)]
@@ -465,6 +466,10 @@ impl Datos for ManzanaCenso2020 {
     fn get_coordinates(&self) -> Option<(f64, f64)> {
         None
     }
+
+    fn get_cve(&self) -> Option<String> {
+        self.cve.clone()
+    }
 }
 
 pub fn read_mzacenso2020_csv(ruta: &str, mapa: &mut HashMap<String,ManzanaCenso2020>) -> Result<(), Box<dyn Error>> 
@@ -528,6 +533,10 @@ pub struct CarpetaInvestigacionCDMX {
 impl Datos for CarpetaInvestigacionCDMX {
     fn get_coordinates(&self) -> Option<(f64, f64)> {
         Some((self.longitud,self.latitud))
+    }
+
+    fn get_cve(&self) -> Option<String> {
+        None
     }
 }
 
