@@ -90,13 +90,13 @@ pub fn read_polygons<T: Datos>(ruta: &str, mapa: &HashMap<String,T>, cveid: &str
 
 #[derive(Clone,Debug)]
 pub struct GeoPunto<T: Datos> {
-    pub punto: Option<geo::Point<f64>>,
+    pub punto: geo::Point<f64>,
     pub datos: Option<T>,
     pub cve: String,
 }
 
 impl<T: Datos> GeoPunto<T> {
-    pub fn new(geopoint: Option<geo::Point<f64>>, datos: Option<T>, cve: &str) -> Self {
+    pub fn new(geopoint: geo::Point<f64>, datos: Option<T>, cve: &str) -> Self {
 
         GeoPunto {
             punto: geopoint.clone(),
@@ -109,13 +109,8 @@ impl<T: Datos> GeoPunto<T> {
 impl<T: Datos> GeoTool for GeoPunto<T> {
     fn agregar_rama(&self, arbol: &mut KdTree<f64, String, [f64;2]>) -> Result<(), Box<dyn Error>> {
 
-        match self.punto {
-            Some(punto) => {
-                let coord = [punto.x(),punto.y()];
-                arbol.add(coord,self.cve.clone())?;
-            },
-            _ => {}
-        };
+        let coord = [self.punto.x(),self.punto.y()];
+        arbol.add(coord,self.cve.clone())?;
 
         Ok(())
     }
@@ -136,7 +131,7 @@ pub fn points_from_vec<T: Datos>(vector: Vec<T>) -> Result<HashMap<String,GeoPun
             _ => break
         };
 
-        let punto = Some(geo::Point::new(coords.0, coords.1));
+        let punto = geo::Point::new(coords.0, coords.1);
         let cve = match evento.get_cve() {
             None => {
                 contador = contador + 1;
