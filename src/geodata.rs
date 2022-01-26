@@ -1,6 +1,8 @@
 use serde::{Deserialize};
 use std::collections::HashMap;
 use std::error::Error;
+use crate::geounidades::GeoMultiPoligono;
+use shapefile::dbase::{Record,FieldValue};
 
 pub trait Datos {
     fn get_coordinates(&self) -> Option<(f64,f64)>;
@@ -567,5 +569,76 @@ pub fn read_carpetascdmx_csv(ruta: &str, vector: &mut Vec<CarpetaInvestigacionCD
     }
 
     Ok(())
+}
+
+#[derive(Debug, Clone)]
+pub struct SeccionBm {
+    pub cvesec: String,
+    pub ventil: String,
+    pub ventil_nacional: String,
+    pub lista_nominal: Option<i32>,
+}
+
+impl SeccionBm {
+    pub fn new(cve: &str, ventil: &str, ventil_nacional: &str, lista_nominal: Option<i32>) -> Self {
+        SeccionBm {
+            cvesec: cve.to_string(),
+            ventil: ventil.to_string(),
+            ventil_nacional: ventil_nacional.to_string(),
+            lista_nominal: lista_nominal.clone()
+        }
+    }
+}
+
+impl Datos for SeccionBm {
+    fn get_coordinates(&self) -> Option<(f64, f64)> {
+        None
+    }
+
+    fn get_cve(&self) -> Option<String> {
+        Some(self.cvesec.to_string())
+    }
+}
+
+pub fn read_secciones_bm(ruta: &str) -> Result<HashMap<String,GeoMultiPoligono<SeccionBm>>, Box<dyn Error>>
+{
+    let pols = shapefile::read_as::<_,shapefile::Polygon, Record>(ruta)?;
+
+    let mut salida: HashMap<String,GeoMultiPoligono<SeccionBm>> = HashMap::new();
+
+    for (polygon, record) in pols {
+
+        let cvesec = match record.get("CVE") {
+            Some(FieldValue::Character(Some(clave))) => clave.to_string(),
+            _ => continue,
+        };
+
+        let ventil = match record.get("Ventil") {
+            Some(FieldValue::Character(Some(vent))) => vent.to_string(),
+            _ => "-".to_string(),
+        };
+
+        let ventil_nacional = match record.get("Ventil_Nac") {
+            Some(FieldValue::Character(Some(vent))) => vent.to_string(),
+            _ => "-".to_string(),
+        };
+
+        let lista_nominal = match record.get("LNominal") {
+            Some(FieldValue::Character(Some(lista))) => lista.parse::<i32>().ok(),
+            _ => None,
+        };
+
+        let seccion = SeccionBm::new(&cvesec,&ventil,&ventil_nacional,lista_nominal);
+
+        let geo_polygon: geo::MultiPolygon<f64> = polygon.into();
+
+        let cve = seccion.get_cve().unwrap();
+
+        let geosec = GeoMultiPoligono::new(&geo_polygon, Some(seccion), &cve);
+
+        salida.insert(cve.to_string(),geosec);
+    };
+
+    Ok(salida)
 }
 

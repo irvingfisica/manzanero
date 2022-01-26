@@ -11,6 +11,43 @@ pub trait GeoTool {
 }
 
 #[derive(Clone,Debug)]
+pub struct GeoMultiPoligono<T: Datos> {
+    pub poligono: geo::MultiPolygon<f64>,
+    pub datos: Option<T>,
+    pub centroide: Option<geo::Point<f64>>,
+    pub cve: String,
+}
+
+impl<T: Datos> GeoMultiPoligono<T> {
+    pub fn new(geopol: &geo::MultiPolygon<f64>, datos: Option<T>, cve: &str) -> Self {
+
+        let centroide = geopol.centroid();
+
+        GeoMultiPoligono {
+            poligono: geopol.clone(),
+            datos: datos,
+            centroide: centroide,
+            cve: cve.to_string(),
+        }
+    }
+}
+
+impl<T: Datos> GeoTool for GeoMultiPoligono<T> {
+    fn agregar_rama(&self, arbol: &mut KdTree<f64, String, [f64;2]>) -> Result<(), Box<dyn Error>> {
+
+        match self.centroide {
+            Some(punto) => {
+                let coord = [punto.x(),punto.y()];
+                arbol.add(coord,self.cve.clone())?;
+            },
+            _ => {}
+        };
+
+        Ok(())
+    }
+}
+
+#[derive(Clone,Debug)]
 pub struct GeoPoligono<T: Datos> {
     pub poligono: geo::Polygon<f64>,
     pub datos: Option<T>,
