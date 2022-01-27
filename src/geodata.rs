@@ -9,6 +9,38 @@ pub trait Datos {
     fn get_cve(&self) -> Option<String>;
 }
 
+impl Datos for Record {
+    fn get_coordinates(&self) -> Option<(f64,f64)> {
+        None
+    }
+
+    fn get_cve(&self) -> Option<String> {
+        None
+    }
+}
+
+pub fn read_generic_poligons(ruta: &str) -> Result<Vec<GeoMultiPoligono<shapefile::dbase::Record>>, Box<dyn Error>>
+{
+    let pols = shapefile::read_as::<_,shapefile::Polygon, Record>(ruta)?;
+
+    let mut salida = Vec::new();
+
+    let mut contadora = 0;
+    for (polygon, record) in pols {
+
+        let geo_polygon: geo::MultiPolygon<f64> = polygon.into();
+
+        contadora = contadora + 1;
+        let cve = contadora.to_string();
+
+        let geosec = GeoMultiPoligono::new(&geo_polygon, Some(record), &cve);
+
+        salida.push(geosec);
+    };
+
+    Ok(salida)
+}
+
 #[allow(non_snake_case)]
 #[derive(Debug, Deserialize, Clone)]
 pub struct ManzanaCenso2020 {
