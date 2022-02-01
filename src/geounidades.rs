@@ -2,6 +2,7 @@ use std::error::Error;
 use std::collections::HashMap;
 use shapefile::dbase::{Record,FieldValue};
 use geo::algorithm::centroid::Centroid;
+use geo::extremes::Extremes;
 use kdtree::KdTree;
 use crate::tools;
 use tools::{multipoligon_to_geodetic,multipoligon_to_projected};
@@ -17,6 +18,8 @@ pub trait Projector {
 
 pub trait GeoTool {
     fn agregar_rama(&self, arbol: &mut KdTree<f64, String, [f64;2]>) -> Result<(), Box<dyn Error>>;
+    fn xrange(&self) -> Option<(f64,f64)>;
+    fn yrange(&self) -> Option<(f64,f64)>;
 }
 
 #[derive(Clone,Debug)]
@@ -53,6 +56,24 @@ impl<T: Datos> GeoTool for GeoMultiPoligono<T> {
         };
 
         Ok(())
+    }
+
+    fn xrange(&self) -> Option<(f64,f64)> {
+        match self.poligono.extremes() {
+            Some(extremes) => {
+                Some((extremes.x_min.coord.x,extremes.x_max.coord.x))
+            },
+            None => None
+        }
+    }
+
+    fn yrange(&self) -> Option<(f64,f64)> {
+        match self.poligono.extremes() {
+            Some(extremes) => {
+                Some((extremes.y_min.coord.y,extremes.y_max.coord.y))
+            },
+            None => None
+        }
     }
 }
 
@@ -108,6 +129,24 @@ impl<T: Datos> GeoTool for GeoPoligono<T> {
         };
 
         Ok(())
+    }
+
+    fn xrange(&self) -> Option<(f64,f64)> {
+        match self.poligono.extremes() {
+            Some(extremes) => {
+                Some((extremes.x_min.coord.x,extremes.x_max.coord.x))
+            },
+            None => None
+        }
+    }
+
+    fn yrange(&self) -> Option<(f64,f64)> {
+        match self.poligono.extremes() {
+            Some(extremes) => {
+                Some((extremes.y_min.coord.y,extremes.y_max.coord.y))
+            },
+            None => None
+        }
     }
 }
 
@@ -195,6 +234,14 @@ impl<T: Datos> GeoTool for GeoPunto<T> {
         arbol.add(coord,self.cve.clone())?;
 
         Ok(())
+    }
+
+    fn xrange(&self) -> Option<(f64,f64)> {
+        Some((self.punto.x(),self.punto.y()))
+    }
+
+    fn yrange(&self) -> Option<(f64,f64)> {
+        Some((self.punto.x(),self.punto.y()))
     }
 }
 
