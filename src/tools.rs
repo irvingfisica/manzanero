@@ -133,7 +133,7 @@ pub fn multipoligon_to_projected(poligonos: MultiPolygon<f64>, prjstr: &str) -> 
     Ok(salida)
 }
 
-pub fn xrange_vec<T: GeoTool>(vector: Vec<T>) -> Option<(f64,f64)> {
+pub fn xrange_vec<T: GeoTool>(vector: &Vec<T>) -> Option<(f64,f64)> {
 
     let vecexts: Vec<(f64,f64)> = vector.iter().filter_map(|ele| ele.xrange()).collect();
 
@@ -144,7 +144,7 @@ pub fn xrange_vec<T: GeoTool>(vector: Vec<T>) -> Option<(f64,f64)> {
 
 }
 
-pub fn yrange_vec<T: GeoTool>(vector: Vec<T>) -> Option<(f64,f64)> {
+pub fn yrange_vec<T: GeoTool>(vector: &Vec<T>) -> Option<(f64,f64)> {
 
     let vecexts: Vec<(f64,f64)> = vector.iter().filter_map(|ele| ele.yrange()).collect();
 
@@ -155,7 +155,7 @@ pub fn yrange_vec<T: GeoTool>(vector: Vec<T>) -> Option<(f64,f64)> {
 
 }
 
-pub fn xrange_map<S,T: GeoTool>(mapa: HashMap<S,T>) -> Option<(f64,f64)> {
+pub fn xrange_map<S,T: GeoTool>(mapa: &HashMap<S,T>) -> Option<(f64,f64)> {
 
     let vecexts: Vec<(f64,f64)> = mapa.values().filter_map(|ele| ele.xrange()).collect();
 
@@ -166,7 +166,7 @@ pub fn xrange_map<S,T: GeoTool>(mapa: HashMap<S,T>) -> Option<(f64,f64)> {
 
 }
 
-pub fn yrange_map<S,T: GeoTool>(mapa: HashMap<S,T>) -> Option<(f64,f64)> {
+pub fn yrange_map<S,T: GeoTool>(mapa: &HashMap<S,T>) -> Option<(f64,f64)> {
 
     let vecexts: Vec<(f64,f64)> = mapa.values().filter_map(|ele| ele.yrange()).collect();
 
