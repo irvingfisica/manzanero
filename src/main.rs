@@ -6,15 +6,16 @@ use geounidades::{GeoPoligono,GeoPunto};
 use geounidades::Projector;
 
 fn main() {
-    let mut mapa: HashMap<String,ManzanaCenso2020> = HashMap::new();
-
-    geodata::read_mzacenso2020_csv("./datos/RESAGEBURB_09CSV20.csv", &mut mapa).unwrap();
-    let manzanas: HashMap<String, GeoPoligono<ManzanaCenso2020>> = geounidades::read_polygons("./datos/09m.shp", &mapa, "CVEGEO").unwrap();
 
     let mut carpetas: Vec<CarpetaInvestigacionCDMX> = Vec::new();
 
     geodata::read_carpetascdmx_csv("./datos/carpetas_completa_octubre_2021.csv", &mut carpetas).unwrap();
     let _eventos: HashMap<String, GeoPunto<CarpetaInvestigacionCDMX>> = geounidades::points_from_vec(carpetas).unwrap();
+
+    let mut mapa: HashMap<String,ManzanaCenso2020> = HashMap::new();
+
+    geodata::read_mzacenso2020_csv("./datos/RESAGEBURB_09CSV20.csv", &mut mapa).unwrap();
+    let manzanas: HashMap<String, GeoPoligono<ManzanaCenso2020>> = geounidades::read_polygons("./datos/09m.shp", &mapa, "CVEGEO").unwrap();
 
     let mut mantest = manzanas.get("0900200010010001").unwrap().clone();
     println!("Projectadas: {:?}\n",mantest.poligono);
