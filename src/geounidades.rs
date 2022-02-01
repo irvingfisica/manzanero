@@ -3,8 +3,17 @@ use std::collections::HashMap;
 use shapefile::dbase::{Record,FieldValue};
 use geo::algorithm::centroid::Centroid;
 use kdtree::KdTree;
+use crate::tools;
+use tools::{multipoligon_to_geodetic,multipoligon_to_projected};
+use tools::{poligon_to_geodetic,poligon_to_projected};
+use tools::{point_to_geodetic,point_to_projected};
 
 use crate::geodata::Datos;
+
+pub trait Projector {
+    fn to_geodetic(&mut self, prjstr: &str) -> Result<(), Box<dyn Error>>;
+    fn to_projected(&mut self, prjstr: &str) -> Result<(), Box<dyn Error>>;
+}
 
 pub trait GeoTool {
     fn agregar_rama(&self, arbol: &mut KdTree<f64, String, [f64;2]>) -> Result<(), Box<dyn Error>>;
@@ -47,6 +56,24 @@ impl<T: Datos> GeoTool for GeoMultiPoligono<T> {
     }
 }
 
+impl<T: Datos> Projector for GeoMultiPoligono<T> {
+    fn to_geodetic(&mut self, prjstr: &str) -> Result<(), Box<dyn Error>> {
+
+        let smpol = multipoligon_to_geodetic(self.poligono.clone(), prjstr)?;
+        self.poligono = smpol;
+
+        Ok(())
+    }
+
+    fn to_projected(&mut self, prjstr: &str) -> Result<(), Box<dyn Error>> {
+
+        let smpol = multipoligon_to_projected(self.poligono.clone(), prjstr)?;
+        self.poligono = smpol;
+
+        Ok(())
+    }
+}
+
 #[derive(Clone,Debug)]
 pub struct GeoPoligono<T: Datos> {
     pub poligono: geo::Polygon<f64>,
@@ -79,6 +106,24 @@ impl<T: Datos> GeoTool for GeoPoligono<T> {
             },
             _ => {}
         };
+
+        Ok(())
+    }
+}
+
+impl<T: Datos> Projector for GeoPoligono<T> {
+    fn to_geodetic(&mut self, prjstr: &str) -> Result<(), Box<dyn Error>> {
+
+        let smpol = poligon_to_geodetic(self.poligono.clone(), prjstr)?;
+        self.poligono = smpol;
+
+        Ok(())
+    }
+
+    fn to_projected(&mut self, prjstr: &str) -> Result<(), Box<dyn Error>> {
+
+        let smpol = poligon_to_projected(self.poligono.clone(), prjstr)?;
+        self.poligono = smpol;
 
         Ok(())
     }
@@ -148,6 +193,24 @@ impl<T: Datos> GeoTool for GeoPunto<T> {
 
         let coord = [self.punto.x(),self.punto.y()];
         arbol.add(coord,self.cve.clone())?;
+
+        Ok(())
+    }
+}
+
+impl<T: Datos> Projector for GeoPunto<T> {
+    fn to_geodetic(&mut self, prjstr: &str) -> Result<(), Box<dyn Error>> {
+
+        let smpol = point_to_geodetic(self.punto.clone(), prjstr)?;
+        self.punto = smpol;
+
+        Ok(())
+    }
+
+    fn to_projected(&mut self, prjstr: &str) -> Result<(), Box<dyn Error>> {
+
+        let smpol = point_to_projected(self.punto.clone(), prjstr)?;
+        self.punto = smpol;
 
         Ok(())
     }
