@@ -1,6 +1,9 @@
 use std::error::Error;
+use std::collections::HashMap;
 use proj::Proj;
 use geo_types::{Point,LineString,Polygon,MultiPolygon};
+use crate::geounidades;
+use geounidades::GeoTool;
 
 pub fn to_deg(rads: f64) -> f64 {
     rads * std::f64::consts::FRAC_1_PI * 180.0
@@ -128,4 +131,48 @@ pub fn multipoligon_to_projected(poligonos: MultiPolygon<f64>, prjstr: &str) -> 
     let salida: MultiPolygon<f64> = salvec.into();
 
     Ok(salida)
+}
+
+pub fn xrange_vec<T: GeoTool>(vector: Vec<T>) -> Option<(f64,f64)> {
+
+    let vecexts: Vec<(f64,f64)> = vector.iter().filter_map(|ele| ele.xrange()).collect();
+
+    let min = vecexts.iter().map(|ext| ext.0).fold(f64::INFINITY, f64::min);
+    let max = vecexts.iter().map(|ext| ext.1).fold(f64::NEG_INFINITY, f64::max);
+
+    Some((min,max))
+
+}
+
+pub fn yrange_vec<T: GeoTool>(vector: Vec<T>) -> Option<(f64,f64)> {
+
+    let vecexts: Vec<(f64,f64)> = vector.iter().filter_map(|ele| ele.yrange()).collect();
+
+    let min = vecexts.iter().map(|ext| ext.0).fold(f64::INFINITY, f64::min);
+    let max = vecexts.iter().map(|ext| ext.1).fold(f64::NEG_INFINITY, f64::max);
+
+    Some((min,max))
+
+}
+
+pub fn xrange_map<S,T: GeoTool>(mapa: HashMap<S,T>) -> Option<(f64,f64)> {
+
+    let vecexts: Vec<(f64,f64)> = mapa.values().filter_map(|ele| ele.xrange()).collect();
+
+    let min = vecexts.iter().map(|ext| ext.0).fold(f64::INFINITY, f64::min);
+    let max = vecexts.iter().map(|ext| ext.1).fold(f64::NEG_INFINITY, f64::max);
+
+    Some((min,max))
+
+}
+
+pub fn yrange_map<S,T: GeoTool>(mapa: HashMap<S,T>) -> Option<(f64,f64)> {
+
+    let vecexts: Vec<(f64,f64)> = mapa.values().filter_map(|ele| ele.yrange()).collect();
+
+    let min = vecexts.iter().map(|ext| ext.0).fold(f64::INFINITY, f64::min);
+    let max = vecexts.iter().map(|ext| ext.1).fold(f64::NEG_INFINITY, f64::max);
+
+    Some((min,max))
+
 }
