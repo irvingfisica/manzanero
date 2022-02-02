@@ -2,7 +2,9 @@ use std::error::Error;
 use std::collections::HashMap;
 use shapefile::dbase::{Record,FieldValue};
 use geo::algorithm::centroid::Centroid;
+use geo::algorithm::bounding_rect::BoundingRect;
 use geo::extremes::Extremes;
+use geo_types::Rect;
 use kdtree::KdTree;
 use crate::tools;
 use tools::{multipoligon_to_geodetic,multipoligon_to_projected};
@@ -20,6 +22,7 @@ pub trait GeoTool {
     fn agregar_rama(&self, arbol: &mut KdTree<f64, String, [f64;2]>) -> Result<(), Box<dyn Error>>;
     fn xrange(&self) -> Option<(f64,f64)>;
     fn yrange(&self) -> Option<(f64,f64)>;
+    fn get_bounding(&self) -> Option<Rect<f64>>;
 }
 
 #[derive(Clone,Debug)]
@@ -74,6 +77,10 @@ impl<T: Datos> GeoTool for GeoMultiPoligono<T> {
             },
             None => None
         }
+    }
+
+    fn get_bounding(&self) -> Option<Rect<f64>> {
+        self.poligono.bounding_rect()
     }
 }
 
@@ -147,6 +154,10 @@ impl<T: Datos> GeoTool for GeoPoligono<T> {
             },
             None => None
         }
+    }
+
+    fn get_bounding(&self) -> Option<Rect<f64>> {
+        self.poligono.bounding_rect()
     }
 }
 
@@ -242,6 +253,10 @@ impl<T: Datos> GeoTool for GeoPunto<T> {
 
     fn yrange(&self) -> Option<(f64,f64)> {
         Some((self.punto.x(),self.punto.y()))
+    }
+
+    fn get_bounding(&self) -> Option<Rect<f64>> {
+        Some(self.punto.bounding_rect())
     }
 }
 
