@@ -1,6 +1,9 @@
+#[cfg(feature = "proj")]
 use std::error::Error;
 use std::collections::HashMap;
+#[cfg(feature = "proj")]
 use proj::Proj;
+#[cfg(feature = "proj")]
 use geo_types::{Point,LineString,Polygon,MultiPolygon};
 use crate::geounidades;
 use geounidades::GeoTool;
@@ -13,6 +16,7 @@ pub fn to_rad(degs: f64) -> f64 {
     degs * std::f64::consts::PI / 180.0
 }
 
+#[cfg(feature = "proj")]
 pub fn point_to_geodetic(punto: Point<f64>, prjstr: &str) -> Result<Point<f64>, Box<dyn Error>> {
 
     let prj = Proj::new(prjstr).ok_or("Hubo un error en la definición de la proyección")?;
@@ -23,6 +27,7 @@ pub fn point_to_geodetic(punto: Point<f64>, prjstr: &str) -> Result<Point<f64>, 
     Ok(salida)
 }
 
+#[cfg(feature = "proj")]
 pub fn point_to_projected(punto: Point<f64>, prjstr: &str) -> Result<Point<f64>, Box<dyn Error>> {
 
     let prj = Proj::new(prjstr).ok_or("Hubo un error en la definición de la proyección")?;
@@ -33,6 +38,7 @@ pub fn point_to_projected(punto: Point<f64>, prjstr: &str) -> Result<Point<f64>,
     Ok(salida)
 }
 
+#[cfg(feature = "proj")]
 pub fn linestring_to_geodetic(linestring: LineString<f64>, prjstr: &str) -> Result<LineString<f64>, Box<dyn Error>> {
 
     let mut pointvec: Vec<Point<f64>> = Vec::new();
@@ -51,6 +57,7 @@ pub fn linestring_to_geodetic(linestring: LineString<f64>, prjstr: &str) -> Resu
 
 }
 
+#[cfg(feature = "proj")]
 pub fn linestring_to_projected(linestring: LineString<f64>, prjstr: &str) -> Result<LineString<f64>, Box<dyn Error>> {
 
     let mut pointvec: Vec<Point<f64>> = Vec::new();
@@ -69,6 +76,7 @@ pub fn linestring_to_projected(linestring: LineString<f64>, prjstr: &str) -> Res
 
 }
 
+#[cfg(feature = "proj")]
 pub fn poligon_to_geodetic(poligono: Polygon<f64>, prjstr: &str) -> Result<Polygon<f64>, Box<dyn Error>> {
 
     let (exterior, interiors) = poligono.into_inner();
@@ -86,6 +94,7 @@ pub fn poligon_to_geodetic(poligono: Polygon<f64>, prjstr: &str) -> Result<Polyg
     Ok(salida)
 }
 
+#[cfg(feature = "proj")]
 pub fn poligon_to_projected(poligono: Polygon<f64>, prjstr: &str) -> Result<Polygon<f64>, Box<dyn Error>> {
 
     let (exterior, interiors) = poligono.into_inner();
@@ -103,6 +112,7 @@ pub fn poligon_to_projected(poligono: Polygon<f64>, prjstr: &str) -> Result<Poly
     Ok(salida)
 }
 
+#[cfg(feature = "proj")]
 pub fn multipoligon_to_geodetic(poligonos: MultiPolygon<f64>, prjstr: &str) -> Result<MultiPolygon<f64>, Box<dyn Error>> {
 
     let mut salvec: Vec<Polygon<f64>> = Vec::new();
@@ -118,6 +128,7 @@ pub fn multipoligon_to_geodetic(poligonos: MultiPolygon<f64>, prjstr: &str) -> R
     Ok(salida)
 }
 
+#[cfg(feature = "proj")]
 pub fn multipoligon_to_projected(poligonos: MultiPolygon<f64>, prjstr: &str) -> Result<MultiPolygon<f64>, Box<dyn Error>> {
 
     let mut salvec: Vec<Polygon<f64>> = Vec::new();

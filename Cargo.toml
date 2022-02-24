@@ -5,6 +5,9 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+projector = ["proj"]
+
 [dependencies]
 shapefile = {version = "0.3", features = ["geo-types"]}
 geo = "0.18"
@@ -12,6 +15,6 @@ geo-types = "0.7"
 csv = "1.1"
 serde = { version = "1", features = ["derive"]}
 rayon = "1.5"
-proj = { version = "0.24.0", features = ["geo-types"]}
 chrono = "0.4"
 kdtree = "0.6.0"
+proj = { version = "0.25.2", features = ["geo-types"], optional = true}

@@ -6,9 +6,13 @@ use geo::algorithm::bounding_rect::BoundingRect;
 use geo::extremes::Extremes;
 use geo_types::Rect;
 use kdtree::KdTree;
+#[cfg(feature = "proj")]
 use crate::tools;
+#[cfg(feature = "proj")]
 use tools::{multipoligon_to_geodetic,multipoligon_to_projected};
+#[cfg(feature = "proj")]
 use tools::{poligon_to_geodetic,poligon_to_projected};
+#[cfg(feature = "proj")]
 use tools::{point_to_geodetic,point_to_projected};
 
 use crate::geodata::Datos;
@@ -84,6 +88,7 @@ impl<T: Datos> GeoTool for GeoMultiPoligono<T> {
     }
 }
 
+#[cfg(feature = "proj")]
 impl<T: Datos> Projector for GeoMultiPoligono<T> {
     fn to_geodetic(&mut self, prjstr: &str) -> Result<(), Box<dyn Error>> {
 
@@ -161,6 +166,7 @@ impl<T: Datos> GeoTool for GeoPoligono<T> {
     }
 }
 
+#[cfg(feature = "proj")]
 impl<T: Datos> Projector for GeoPoligono<T> {
     fn to_geodetic(&mut self, prjstr: &str) -> Result<(), Box<dyn Error>> {
 
@@ -260,6 +266,7 @@ impl<T: Datos> GeoTool for GeoPunto<T> {
     }
 }
 
+#[cfg(feature = "proj")]
 impl<T: Datos> Projector for GeoPunto<T> {
     fn to_geodetic(&mut self, prjstr: &str) -> Result<(), Box<dyn Error>> {
 
